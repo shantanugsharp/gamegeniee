@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Env
+.env
+.env.local
+
+# Data + model caches (regenerate with the scripts)
+backend/data/*
+!backend/data/.gitkeep
+.cache/
+models_cache/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Node / Next.js (Phase 3)
+node_modules/
+.next/
+out/

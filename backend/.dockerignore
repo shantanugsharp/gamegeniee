@@ -1,0 +1,14 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.example
+.env.local
+scripts/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+data/profiles.db
+data/.gitkeep
