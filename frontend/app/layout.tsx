@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   verification: {
     google: "rHyoJmjfdNaobAqDzVrqu2aJ-mzr1SH47kk3i-Hagqc",
+    other: {
+      "msvalidate.01": "EC343638B9D754D2793CBA84EC1173F5",
+    },
   },
 };
 
