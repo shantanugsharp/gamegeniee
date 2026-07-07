@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { listGames, listGenres } from "@/lib/api";
 import { SITE_URL } from "@/lib/site";
+import { posts } from "@/content/blog";
 
 /**
  * Dynamic sitemap. Structure:
@@ -18,6 +19,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/games`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/genres`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    ...posts.map(p => ({
+      url: `${SITE_URL}/blog/${p.slug}`,
+      lastModified: new Date(p.date),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
   ];
 
   const routes: MetadataRoute.Sitemap = [...staticRoutes];

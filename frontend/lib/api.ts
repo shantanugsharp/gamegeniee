@@ -81,6 +81,41 @@ export async function listGenres(): Promise<{ genres: { slug: string; count: num
   return serverFetch("/genres");
 }
 
+export async function surpriseMe(filters?: {
+  genre?: string;
+  tier?: string;
+  price_max?: number;
+  multiplayer?: boolean;
+}): Promise<Game> {
+  const params = new URLSearchParams();
+  if (filters?.genre) params.set("genre", filters.genre);
+  if (filters?.tier) params.set("tier", filters.tier);
+  if (filters?.price_max != null) params.set("price_max", String(filters.price_max));
+  if (filters?.multiplayer != null) params.set("multiplayer", String(filters.multiplayer));
+  const q = params.toString();
+  const res = await fetch(`${API_BASE}/surprise${q ? "?" + q : ""}`);
+  if (!res.ok) throw new Error(`surprise ${res.status}`);
+  return res.json();
+}
+
+export async function explainGame(slug: string, userId: string) {
+  return serverFetch<{ game: Game; pitch: string }>(
+    `/games/${encodeURIComponent(slug)}/explain?user_id=${encodeURIComponent(userId)}`
+  );
+}
+
+export async function explainGenre(genre: string) {
+  return serverFetch<{ genre: string; explanation: string; examples: Game[] }>(
+    `/genres/${encodeURIComponent(genre)}/explain`
+  );
+}
+
+export async function tasteSummary(userId: string) {
+  const res = await fetch(`${API_BASE}/profile/${encodeURIComponent(userId)}/taste-summary`);
+  if (!res.ok) throw new Error(`taste ${res.status}`);
+  return res.json() as Promise<{ count: number; summary: string; liked: Game[] }>;
+}
+
 export async function listGamesByGenre(genre: string, limit = 60, offset = 0) {
   return serverFetch<{
     total: number;

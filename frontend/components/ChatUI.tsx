@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { clientChat, clientFeedback, clientQueryFeedback } from "@/lib/api";
 import type { ChatResponse, Game, Tier } from "@/lib/types";
+import SurpriseButton from "@/components/SurpriseButton";
 
 function TierBadge({ tier }: { tier: Tier }) {
   const style: Record<Tier, string> = {
@@ -166,7 +167,7 @@ export default function ChatUI() {
             <p className="text-muted mb-6 max-w-xl">
               Tell me a mood, genre, budget, or vibe. I&apos;ll match against 56,000+ PC games.
             </p>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap items-center">
               {suggestions.map(s => (
                 <button
                   key={s}
@@ -177,6 +178,7 @@ export default function ChatUI() {
                   {s}
                 </button>
               ))}
+              <SurpriseButton variant="chip" />
             </div>
           </div>
         </div>

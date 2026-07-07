@@ -195,6 +195,42 @@ def list_games(
     }
 
 
+@app.get("/surprise")
+def surprise(
+    genre: Optional[str] = None,
+    tier: Optional[str] = None,
+    price_max: Optional[float] = None,
+    multiplayer: Optional[bool] = None,
+) -> Dict[str, Any]:
+    filters: Dict[str, Any] = {}
+    if genre: filters["genres"] = [genre]
+    if tier: filters["tier"] = tier
+    if price_max is not None: filters["price_max"] = price_max
+    if multiplayer is not None: filters["multiplayer"] = multiplayer
+    game = get_agent().surprise(filters)
+    if not game:
+        raise HTTPException(404, "no game matches those filters")
+    return game
+
+
+@app.get("/games/{slug}/explain")
+def game_explain(slug: str, user_id: str = "anon") -> Dict[str, Any]:
+    result = get_agent().explain_game(user_id, slug)
+    if not result:
+        raise HTTPException(404, "not found")
+    return result
+
+
+@app.get("/genres/{genre}/explain")
+def genre_explain(genre: str) -> Dict[str, Any]:
+    return get_agent().explain_genre(genre)
+
+
+@app.get("/profile/{user_id}/taste-summary")
+def taste_summary_endpoint(user_id: str) -> Dict[str, Any]:
+    return get_agent().taste_summary(user_id)
+
+
 @app.get("/genres")
 def list_genres() -> Dict[str, Any]:
     """Returns top genres/tags with counts — powers the genre landing pages."""

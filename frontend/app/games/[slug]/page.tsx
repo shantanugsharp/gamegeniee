@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getGameDetail, listGames } from "@/lib/api";
+import ExplainGame from "@/components/ExplainGame";
+import TwistButtons from "@/components/TwistButtons";
 
 // -- ISR: revalidate at most once per day --
 export const revalidate = 86400;
@@ -132,16 +134,28 @@ export default async function GameDetailPage({ params }: Props) {
               ))}
             </div>
             <p className="text-sm leading-relaxed text-muted">{game.short_description}</p>
-            {game.steam_url && (
+            <div className="flex flex-wrap gap-3 mt-5">
+              {game.steam_url && (
+                <a
+                  href={game.steam_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="cta-glow text-white rounded-xl px-5 py-2 font-medium no-underline inline-flex items-center gap-2 shadow-lg shadow-accent/40 hover:shadow-accent/70 transition-shadow"
+                >
+                  Get game <span>↗</span>
+                </a>
+              )}
               <a
-                href={game.steam_url}
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(game.name + " official trailer")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cta-glow text-white rounded-xl px-5 py-2 font-medium no-underline inline-flex items-center gap-2 mt-5 shadow-lg shadow-accent/40 hover:shadow-accent/70 transition-shadow"
+                className="bg-panel border border-border hover:border-gold text-white rounded-xl px-5 py-2 no-underline inline-flex items-center gap-2 transition-colors"
               >
-                Get game <span>↗</span>
+                ▶ Watch trailer
               </a>
-            )}
+            </div>
+            <ExplainGame slug={slug} />
+            <TwistButtons gameName={game.name} />
           </div>
         </div>
       </div>

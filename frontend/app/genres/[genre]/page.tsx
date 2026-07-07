@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { listGamesByGenre, listGenres } from "@/lib/api";
+import { listGamesByGenre, listGenres, explainGenre } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export const revalidate = 86400;
@@ -36,12 +36,18 @@ export default async function GenreLandingPage({ params }: Props) {
   const decoded = decodeURIComponent(genre);
   const title = titleCase(decoded);
   let data;
+  let genreInfo: { explanation: string } | null = null;
   try {
     data = await listGamesByGenre(decoded, 60, 0);
   } catch {
     notFound();
   }
   if (!data || data.total === 0) notFound();
+  try {
+    genreInfo = await explainGenre(decoded);
+  } catch {
+    genreInfo = null;
+  }
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -86,6 +92,19 @@ export default async function GenreLandingPage({ params }: Props) {
           </p>
         </div>
       </div>
+      {genreInfo?.explanation && (
+        <section className="bg-panel border border-border rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 w-40 h-40 bg-gold/5 rounded-full blur-2xl pointer-events-none" />
+          <div className="relative">
+            <div className="text-xs uppercase tracking-widest text-gold mb-2">
+              ✦ what is a {title.toLowerCase()} game?
+            </div>
+            <div className="text-sm text-white/90 leading-relaxed whitespace-pre-line">
+              {genreInfo.explanation}
+            </div>
+          </div>
+        </section>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {data.games.map(g => (
           <a

@@ -42,6 +42,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 { href: "/chat", label: "Chat" },
                 { href: "/genres", label: "Genres" },
                 { href: "/games", label: "Browse" },
+                { href: "/blog", label: "Blog" },
+                { href: "/profile", label: "You" },
                 { href: "/about", label: "About" },
               ].map(link => (
                 <a

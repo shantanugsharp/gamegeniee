@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { listGenres, listGames } from "@/lib/api";
 import { SITE_URL } from "@/lib/site";
+import SurpriseButton from "@/components/SurpriseButton";
 
 export const revalidate = 86400;
 
@@ -92,6 +93,7 @@ export default async function LandingPage() {
                 Make a wish
                 <span className="text-lg">→</span>
               </a>
+              <SurpriseButton variant="cta" />
               <a
                 href="/genres"
                 className="text-muted hover:text-white text-sm no-underline underline-offset-4 hover:underline"

@@ -11,10 +11,18 @@ Ties the whole pipeline together:
 """
 from typing import Optional, List, Dict
 
+import random
+import numpy as np
+
 from .profile import Profile
 from .retrieval import Retriever
 from .slots import extract_slots
-from .explain import generate_rationales
+from .explain import (
+    generate_rationales,
+    explain_game_for_user,
+    explain_genre as _explain_genre_llm,
+    taste_summary as _taste_summary_llm,
+)
 from .chat import chat_reply, off_topic_reply
 
 
@@ -110,4 +118,67 @@ class Agent:
             "message": f"Found {len(recs)} games matching your request.",
             "slots": slots,
             "recommendations": recs,
+        }
+
+    # ---------- New AI features ----------
+
+    def surprise(self, filters: Optional[dict] = None) -> Optional[dict]:
+        """Pick one random game, popularity-weighted, respecting optional filters."""
+        mask = self.retriever.apply_filters(filters or {})
+        df = self.retriever.games
+        allowed_indices = df.index if mask is None else df.index[mask]
+        if len(allowed_indices) == 0:
+            return None
+        pos = df.loc[allowed_indices, "positive_reviews"].values.astype(float)
+        weights = np.log1p(pos)
+        s = weights.sum()
+        if s <= 0:
+            picked = int(random.choice(list(allowed_indices)))
+        else:
+            picked = int(np.random.choice(list(allowed_indices), p=weights / s))
+        return self.retriever._row_to_dict(picked, 1.0)
+
+    def explain_game(self, user_id: str, slug: str) -> Optional[dict]:
+        game = self.retriever.get_by_slug(slug)
+        if not game:
+            return None
+        fb = self.profile.get_feedback(user_id)
+        liked = []
+        for aid in fb.get("like", [])[:5]:
+            row = self.retriever.app_id_to_row.get(aid)
+            if row is not None:
+                liked.append(self.retriever._row_to_dict(row, 1.0))
+        pitch = explain_game_for_user(game, liked)
+        return {"game": game, "pitch": pitch}
+
+    def explain_genre(self, genre: str) -> dict:
+        # Grab top 5 highest-rated games in this genre as canonical examples
+        wanted = genre.lower()
+        matches: List[int] = []
+        for i, s in enumerate(self.retriever._genre_tag_sets):
+            if wanted in s or any(wanted in t for t in s):
+                matches.append(i)
+        examples: List[dict] = []
+        if matches:
+            top = sorted(
+                matches,
+                key=lambda i: -int(self.retriever.games.iloc[i]["positive_reviews"]),
+            )[:5]
+            examples = [self.retriever._row_to_dict(i, 1.0) for i in top]
+        explanation = _explain_genre_llm(genre, examples)
+        return {"genre": genre, "explanation": explanation, "examples": examples}
+
+    def taste_summary(self, user_id: str) -> dict:
+        fb = self.profile.get_feedback(user_id)
+        liked_ids = fb.get("like", [])
+        liked_games = []
+        for aid in liked_ids:
+            row = self.retriever.app_id_to_row.get(aid)
+            if row is not None:
+                liked_games.append(self.retriever._row_to_dict(row, 1.0))
+        summary = _taste_summary_llm(liked_games)
+        return {
+            "count": len(liked_ids),
+            "summary": summary,
+            "liked": liked_games,
         }
