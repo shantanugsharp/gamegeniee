@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { listGames, listGenres } from "@/lib/api";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import { SITE_URL } from "@/lib/site";
 
 /**
  * Dynamic sitemap. Structure:

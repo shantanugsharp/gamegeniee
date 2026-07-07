@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { listGenres, listGames } from "@/lib/api";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 86400;
 
