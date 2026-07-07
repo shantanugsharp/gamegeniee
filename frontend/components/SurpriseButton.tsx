@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { surpriseMe } from "@/lib/api";
 
 export default function SurpriseButton({
@@ -11,15 +12,23 @@ export default function SurpriseButton({
   filters?: Parameters<typeof surpriseMe>[0];
 }) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function fire() {
     if (loading) return;
     setLoading(true);
+    // Safety: if navigation stalls (e.g. slow backend or bad response),
+    // reset loading after 8s so the user can retry instead of staring at "Rolling..." forever.
+    const safety = window.setTimeout(() => setLoading(false), 8000);
     try {
       const game = await surpriseMe(filters);
-      window.location.href = `/games/${game.slug}`;
+      router.push(`/games/${game.slug}`);
+      // Reset shortly after so if the user hits back, button is fresh again.
+      window.setTimeout(() => setLoading(false), 500);
     } catch {
       setLoading(false);
+    } finally {
+      window.clearTimeout(safety);
     }
   }
 
@@ -28,10 +37,11 @@ export default function SurpriseButton({
       <button
         onClick={fire}
         disabled={loading}
-        className="bg-panel border border-gold/40 hover:border-gold text-white rounded-xl px-6 py-3 font-medium no-underline flex items-center gap-2 transition-colors disabled:opacity-60"
+        aria-busy={loading}
+        className="bg-panel border border-gold/40 hover:border-gold hover:bg-gold/10 text-white rounded-xl px-8 py-4 font-semibold no-underline inline-flex items-center justify-center gap-2 min-w-[180px] transition-all disabled:opacity-70 disabled:cursor-wait"
       >
         <span className={loading ? "animate-spin inline-block" : "inline-block"}>🎲</span>
-        {loading ? "Rolling..." : "Surprise me"}
+        <span>{loading ? "Rolling…" : "Surprise me"}</span>
       </button>
     );
   }
@@ -40,10 +50,11 @@ export default function SurpriseButton({
     <button
       onClick={fire}
       disabled={loading}
-      className="text-xs bg-panel/70 backdrop-blur border border-gold/30 rounded-full px-3 py-1.5 hover:border-gold hover:bg-gold/10 text-gold transition-all disabled:opacity-60"
+      aria-busy={loading}
+      className="text-sm bg-panel/70 backdrop-blur border border-gold/30 rounded-full px-3 py-1.5 hover:border-gold hover:bg-gold/10 text-gold transition-all disabled:opacity-70 disabled:cursor-wait"
     >
       <span className={loading ? "animate-spin inline-block mr-1" : "inline-block mr-1"}>🎲</span>
-      {loading ? "Rolling..." : "Surprise me"}
+      {loading ? "Rolling…" : "Surprise me"}
     </button>
   );
 }

@@ -87,11 +87,11 @@ export default async function LandingPage() {
               <a
                 href="/chat"
                 className="cta-glow text-white rounded-xl px-8 py-4 font-semibold no-underline
-                           shadow-lg shadow-accent/40 hover:shadow-accent/70 transition-shadow
-                           flex items-center gap-2"
+                           inline-flex items-center justify-center gap-2 min-w-[180px]
+                           shadow-lg shadow-accent/40 hover:shadow-accent/70 transition-shadow"
               >
-                Make a wish
-                <span className="text-lg">→</span>
+                <span>Make a wish</span>
+                <span>→</span>
               </a>
               <SurpriseButton variant="cta" />
               <a

@@ -103,12 +103,14 @@ export default async function GameDetailPage({ params }: Props) {
         <div className="orb bg-gold w-[220px] h-[220px] top-20 right-0 opacity-20 pointer-events-none" />
         <div className="relative flex flex-col md:flex-row gap-6">
           {game.header_image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={game.header_image}
-              alt={game.name}
-              className="md:w-1/2 aspect-[460/215] object-cover rounded-xl border border-border shadow-2xl shadow-accent/20"
-            />
+            <div className="md:w-1/2 aspect-[460/215] rounded-xl border border-border shadow-2xl shadow-accent/20 overflow-hidden bg-black/40 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={game.header_image}
+                alt={game.name}
+                className="w-full h-full object-contain"
+              />
+            </div>
           )}
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 leading-tight">
