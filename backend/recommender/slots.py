@@ -12,24 +12,9 @@ Concepts:
   We only surface this when it says so — otherwise recommend.
 """
 import json
-import os
 from typing import Optional, List, Dict
 
-from groq import Groq
-
-MODEL = "llama-3.3-70b-versatile"
-
-_client: Optional[Groq] = None
-
-
-def _get_client() -> Groq:
-    global _client
-    if _client is None:
-        api_key = os.environ.get("GROQ_API_KEY")
-        if not api_key:
-            raise RuntimeError("GROQ_API_KEY not set in env")
-        _client = Groq(api_key=api_key)
-    return _client
+from .llm import chat_completion_from_messages
 
 
 SYSTEM_PROMPT = """You are a game recommendation assistant. Parse each user message into a JSON object with EXACTLY these fields:
@@ -93,14 +78,12 @@ def extract_slots(query: str, conversation_history: Optional[List[Dict]] = None)
         messages.extend(conversation_history[-6:])
     messages.append({"role": "user", "content": query})
 
-    resp = _get_client().chat.completions.create(
-        model=MODEL,
-        messages=messages,
+    raw = chat_completion_from_messages(
+        messages,
         response_format={"type": "json_object"},
         temperature=0.2,
         max_tokens=400,
-    )
-    raw = resp.choices[0].message.content or "{}"
+    ) or "{}"
     try:
         slots = json.loads(raw)
         if not isinstance(slots, dict):

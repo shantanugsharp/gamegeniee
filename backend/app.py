@@ -111,13 +111,28 @@ def health() -> Dict[str, Any]:
 
 @app.post("/chat")
 def chat(req: ChatIn) -> Dict[str, Any]:
-    return get_agent().respond(
-        user_id=req.user_id,
-        query=req.message,
-        conversation_history=req.history or [],
-        recent_games=req.recent_games or [],
-        top_n=req.top_n,
-    )
+    try:
+        return get_agent().respond(
+            user_id=req.user_id,
+            query=req.message,
+            conversation_history=req.history or [],
+            recent_games=req.recent_games or [],
+            top_n=req.top_n,
+        )
+    except Exception as e:
+        # LLM providers exhausted (both Groq + Gemini down / rate-limited).
+        # Return a friendly response instead of 500 so the frontend can show
+        # a nice message instead of an error stack.
+        return {
+            "type": "chat",
+            "message": (
+                "The genie is resting — both AI providers hit their limits. "
+                "Try again in a minute, or browse by genre."
+            ),
+            "slots": {"intent": "chat", "search_text": req.message},
+            "recommendations": [],
+            "error": str(e)[:200],
+        }
 
 
 @app.post("/feedback")

@@ -10,24 +10,9 @@ Concepts:
   and faster; the model sees the full slate and can differentiate rationales.
 """
 import json
-import os
 from typing import List, Optional
 
-from groq import Groq
-
-MODEL = "llama-3.3-70b-versatile"
-
-_client: Optional[Groq] = None
-
-
-def _get_client() -> Groq:
-    global _client
-    if _client is None:
-        api_key = os.environ.get("GROQ_API_KEY")
-        if not api_key:
-            raise RuntimeError("GROQ_API_KEY not set in env")
-        _client = Groq(api_key=api_key)
-    return _client
+from .llm import chat_completion_from_messages
 
 
 SYSTEM_PROMPT = (
@@ -69,9 +54,8 @@ def generate_rationales(
     )
 
     try:
-        resp = _get_client().chat.completions.create(
-            model=MODEL,
-            messages=[
+        raw = chat_completion_from_messages(
+            [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
@@ -79,7 +63,7 @@ def generate_rationales(
             temperature=0.4,
             max_tokens=800,
         )
-        data = json.loads(resp.choices[0].message.content or "{}")
+        data = json.loads(raw or "{}")
         by_id = {int(r["id"]): str(r["text"]) for r in data.get("rationales", []) if "id" in r and "text" in r}
     except (json.JSONDecodeError, KeyError, ValueError):
         by_id = {}
@@ -113,16 +97,14 @@ def explain_game_for_user(game: dict, liked_games: Optional[List[dict]] = None) 
         "- Paragraph 2 (50-70 words): whether it's a fit for THIS user. Reference past likes if relevant.\n"
         "- Ground every claim in the actual metadata.\n"
     )
-    resp = _get_client().chat.completions.create(
-        model=MODEL,
-        messages=[
+    return chat_completion_from_messages(
+        [
             {"role": "system", "content": EXPLAIN_GAME_SYSTEM},
             {"role": "user", "content": prompt},
         ],
         temperature=0.5,
         max_tokens=400,
     )
-    return (resp.choices[0].message.content or "").strip()
 
 
 # ---------- Genre deep-dive ----------
@@ -147,16 +129,14 @@ def explain_genre(genre_name: str, examples: Optional[List[dict]] = None) -> str
         "- Written for someone who's heard the term but doesn't know it deeply.\n"
         "- No 'in conclusion' phrases, no marketing tone."
     )
-    resp = _get_client().chat.completions.create(
-        model=MODEL,
-        messages=[
+    return chat_completion_from_messages(
+        [
             {"role": "system", "content": GENRE_EXPLAIN_SYSTEM},
             {"role": "user", "content": prompt},
         ],
         temperature=0.4,
         max_tokens=400,
     )
-    return (resp.choices[0].message.content or "").strip()
 
 
 # ---------- Taste summary ----------
@@ -187,13 +167,11 @@ def taste_summary(liked_games: List[dict]) -> str:
         "- Reference specific tags/vibes that repeat.\n"
         "- No 'overall', 'in conclusion', 'seems like'. Direct observations only."
     )
-    resp = _get_client().chat.completions.create(
-        model=MODEL,
-        messages=[
+    return chat_completion_from_messages(
+        [
             {"role": "system", "content": TASTE_SUMMARY_SYSTEM},
             {"role": "user", "content": prompt},
         ],
         temperature=0.4,
         max_tokens=200,
     )
-    return (resp.choices[0].message.content or "").strip()

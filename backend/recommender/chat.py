@@ -11,12 +11,9 @@ discuss games / gaming / this recommender, and to redirect anything else.
 Off-topic messages are short-circuited to a canned response so we don't pay
 for LLM calls on "what's the weather".
 """
-import os
 from typing import List, Dict, Optional
 
-from groq import Groq
-
-MODEL = "llama-3.3-70b-versatile"
+from .llm import chat_completion_from_messages
 
 OFF_TOPIC_REPLY = (
     "I'm a game recommender — I only chat about games. "
@@ -36,19 +33,6 @@ STYLE:
 - If asked how you work, keep it high-level: "I search 56,000+ Steam games using a mix of keyword and semantic search, then a small model ranks the top hits."
 
 If the user is asking about specific games shown in RECENT_RECS, answer using ONLY that metadata. Do not fabricate details."""
-
-_client: Optional[Groq] = None
-
-
-def _get_client() -> Groq:
-    global _client
-    if _client is None:
-        api_key = os.environ.get("GROQ_API_KEY")
-        if not api_key:
-            raise RuntimeError("GROQ_API_KEY not set")
-        _client = Groq(api_key=api_key)
-    return _client
-
 
 def off_topic_reply() -> str:
     """No LLM call — canned polite redirect."""
@@ -86,10 +70,9 @@ def chat_reply(
 
     messages.append({"role": "user", "content": query})
 
-    resp = _get_client().chat.completions.create(
-        model=MODEL,
-        messages=messages,
+    reply = chat_completion_from_messages(
+        messages,
         temperature=0.4,
         max_tokens=250,
     )
-    return (resp.choices[0].message.content or "").strip() or OFF_TOPIC_REPLY
+    return reply or OFF_TOPIC_REPLY
