@@ -14,6 +14,10 @@ from typing import Optional, List, Dict
 import random
 import numpy as np
 
+# In-memory cache for LLM-generated explanations. Keeps ISR rebuilds from
+# firing Groq for the same genre 40 times in a burst.
+_GENRE_EXPLAIN_CACHE: Dict[str, dict] = {}
+
 from .profile import Profile
 from .retrieval import Retriever
 from .slots import extract_slots
@@ -152,7 +156,13 @@ class Agent:
         return {"game": game, "pitch": pitch}
 
     def explain_genre(self, genre: str) -> dict:
-        # Grab top 5 highest-rated games in this genre as canonical examples
+        # Cached — genre content doesn't change per-request.
+        # Prevents 40+ LLM calls firing when Vercel rebuilds all ISR pages.
+        cache_key = genre.lower()
+        cached = _GENRE_EXPLAIN_CACHE.get(cache_key)
+        if cached and cached.get("explanation"):
+            return cached
+
         wanted = genre.lower()
         matches: List[int] = []
         for i, s in enumerate(self.retriever._genre_tag_sets):
@@ -165,8 +175,15 @@ class Agent:
                 key=lambda i: -int(self.retriever.games.iloc[i]["positive_reviews"]),
             )[:5]
             examples = [self.retriever._row_to_dict(i, 1.0) for i in top]
+
         explanation = _explain_genre_llm(genre, examples)
-        return {"genre": genre, "explanation": explanation, "examples": examples}
+        result = {"genre": genre, "explanation": explanation, "examples": examples}
+
+        # Only cache successful non-empty explanations. Empty means both LLMs
+        # failed this call — retry later.
+        if explanation:
+            _GENRE_EXPLAIN_CACHE[cache_key] = result
+        return result
 
     def taste_summary(self, user_id: str) -> dict:
         fb = self.profile.get_feedback(user_id)

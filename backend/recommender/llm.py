@@ -28,7 +28,9 @@ import google.generativeai as genai
 
 # Model IDs
 GROQ_PRIMARY_MODEL = "llama-3.1-8b-instant"     # higher daily TPD than 70B
-GEMINI_MODEL       = "gemini-1.5-flash"          # free 1M tokens/day
+# Gemini 1.5 was retired mid-2025; use current model.
+# gemini-2.5-flash: free 250 RPD, 1M TPM. Solid fallback capacity.
+GEMINI_MODEL       = "gemini-2.5-flash"
 
 _groq_client: Optional[Groq] = None
 _gemini_configured = False
