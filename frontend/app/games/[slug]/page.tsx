@@ -97,8 +97,20 @@ export default async function GameDetailPage({ params }: Props) {
         <span className="text-white">{game.name}</span>
       </nav>
 
-      {/* Hero panel with subtle orb backdrop */}
+      {/* Hero panel: the game's own art, blurred, as a cinematic backdrop */}
       <div className="relative overflow-visible">
+        {game.header_image && (
+          <div className="absolute -inset-x-6 -top-16 h-[420px] overflow-hidden pointer-events-none -z-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={game.header_image}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover opacity-25 blur-3xl scale-125"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg/40 to-bg" />
+          </div>
+        )}
         <div className="orb bg-accent w-[280px] h-[280px] -top-10 -left-10 opacity-30 pointer-events-none" />
         <div className="orb bg-gold w-[220px] h-[220px] top-20 right-0 opacity-20 pointer-events-none" />
         <div className="relative flex flex-col md:flex-row gap-6">

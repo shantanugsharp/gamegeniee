@@ -9,6 +9,20 @@ export const metadata = {
 
 export const revalidate = 86400;
 
+const GENRE_ICONS: Record<string, string> = {
+  action: "⚔️", adventure: "🗺️", rpg: "🐉", strategy: "♟️", simulation: "🏗️",
+  puzzle: "🧩", indie: "🎨", casual: "🍵", racing: "🏎️", sports: "🏆",
+  horror: "👻", "story rich": "📖", atmospheric: "🌌", roguelike: "💀",
+  "co-op": "🤝", multiplayer: "🌐", singleplayer: "🎯", "2d": "🕹️",
+  "3d": "🧊", platformer: "🍄", shooter: "🔫", survival: "🏕️",
+  "open world": "🌍", fantasy: "🧙", "sci-fi": "🚀", anime: "🌸",
+  "pixel graphics": "👾", "visual novel": "💬", vr: "🥽", music: "🎵",
+};
+
+function genreIcon(slug: string) {
+  return GENRE_ICONS[slug.toLowerCase()] ?? "🎮";
+}
+
 export default async function GenresIndex() {
   const { genres } = await listGenres();
   return (
@@ -37,10 +51,14 @@ export default async function GenresIndex() {
           <a
             key={g.slug}
             href={`/genres/${encodeURIComponent(g.slug)}`}
-            className="tilt-card bg-panel border border-border rounded-xl p-4 no-underline"
+            className="tilt-card group relative bg-panel border border-border rounded-xl p-4 no-underline overflow-hidden"
           >
-            <div className="text-white capitalize font-medium">{g.slug}</div>
-            <div className="text-xs text-gold mt-1">{g.count.toLocaleString()} games</div>
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <div className="text-2xl mb-2">{genreIcon(g.slug)}</div>
+              <div className="text-white capitalize font-medium">{g.slug}</div>
+              <div className="text-xs text-gold mt-1">{g.count.toLocaleString()} games</div>
+            </div>
           </a>
         ))}
       </div>

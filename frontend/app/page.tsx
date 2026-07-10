@@ -5,6 +5,7 @@ import SurpriseButton from "@/components/SurpriseButton";
 import Hero3D from "@/components/Hero3D";
 import ParticleField from "@/components/ParticleField";
 import Reveal from "@/components/Reveal";
+import WishTicker from "@/components/WishTicker";
 
 export const revalidate = 86400;
 
@@ -29,13 +30,20 @@ export default async function LandingPage() {
     const g = await listGenres();
     featuredGenres = g.genres.slice(0, 10);
   } catch {}
+  let gamePool: typeof featuredGames = [];
   try {
-    const gm = await listGames(9, 0);
-    featuredGames = gm.games;
+    const gm = await listGames(60, 0);
+    gamePool = gm.games;
+    featuredGames = gamePool.slice(0, 9);
   } catch {}
 
   // Top 3 games for the 3D floating stack in the hero — real game art, real depth.
   const heroStack = featuredGames.slice(0, 3);
+
+  // Game of the day: deterministic date-seeded pick from the popular pool.
+  // Page revalidates daily, so the spotlight rotates with it.
+  const dayIndex = Math.floor(Date.now() / 86_400_000);
+  const gameOfTheDay = gamePool.length > 0 ? gamePool[dayIndex % gamePool.length] : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -127,6 +135,8 @@ export default async function LandingPage() {
                 </a>
               ))}
             </div>
+
+            <WishTicker />
           </div>
 
           {/* ---- Right column: floating 3D game case ---- */}
@@ -209,6 +219,73 @@ export default async function LandingPage() {
         </div>
       </section>
       </Reveal>
+
+      {/* ============ GAME OF THE DAY ============ */}
+      {gameOfTheDay && (
+        <Reveal>
+        <section className="border-t border-border pt-16">
+          <div className="relative rounded-3xl border border-gold/25 overflow-hidden bg-panel">
+            {/* Blurred art backdrop */}
+            {gameOfTheDay.header_image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={gameOfTheDay.header_image}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover opacity-20 blur-2xl scale-110"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/60 to-transparent" />
+            <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center p-8 md:p-12">
+              <div>
+                <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold bg-gold/10 border border-gold/30 rounded-full px-3 py-1 mb-4">
+                  <span className="animate-sparkle-spin inline-block">✦</span>
+                  game of the day
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                  {gameOfTheDay.name}
+                </h2>
+                {gameOfTheDay.short_description && (
+                  <p className="text-muted leading-relaxed mb-4 line-clamp-3">
+                    {gameOfTheDay.short_description}
+                  </p>
+                )}
+                {typeof gameOfTheDay.review_score === "number" && (
+                  <div className="text-sm text-gold mb-6">
+                    {(gameOfTheDay.review_score * 100).toFixed(0)}% positive reviews
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href={`/games/${gameOfTheDay.slug}`}
+                    className="cta-glow text-white rounded-xl px-6 py-3 font-semibold no-underline inline-flex items-center gap-2 shadow-lg shadow-accent/40 hover:shadow-accent/70 transition-shadow"
+                  >
+                    See the game <span>→</span>
+                  </a>
+                  <a
+                    href={`/chat?q=${encodeURIComponent(`games like ${gameOfTheDay.name}`)}`}
+                    className="bg-panel/80 backdrop-blur border border-border hover:border-gold text-white rounded-xl px-6 py-3 no-underline inline-flex items-center gap-2 transition-colors"
+                  >
+                    More like this
+                  </a>
+                </div>
+              </div>
+              {gameOfTheDay.header_image && (
+                <div className="hidden md:block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={gameOfTheDay.header_image}
+                    alt={gameOfTheDay.name}
+                    className="w-full rounded-2xl border border-border shadow-2xl shadow-accent/20
+                               hover:scale-[1.02] transition-transform duration-500"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+        </Reveal>
+      )}
 
       {/* ============ FEATURED GENRES ============ */}
       {featuredGenres.length > 0 && (

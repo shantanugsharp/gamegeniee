@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { clientChat, clientFeedback, clientQueryFeedback } from "@/lib/api";
 import type { ChatResponse, Game, Tier } from "@/lib/types";
 import SurpriseButton from "@/components/SurpriseButton";
+import ParticleField from "@/components/ParticleField";
 
 function TierBadge({ tier }: { tier: Tier }) {
   const style: Record<Tier, string> = {
@@ -87,7 +88,7 @@ export default function ChatUI() {
   async function submit(msg: string) {
     if (!msg.trim() || !userId || busy) return;
     setBusy(true);
-    setStage("Understanding your request…");
+    setStage("Hearing your wish…");
     const nextTurns: Turn[] = [...turns, { role: "user", content: msg }];
     setTurns(nextTurns);
     setInput("");
@@ -104,8 +105,8 @@ export default function ChatUI() {
 
       // Fake step progression — the real pipeline runs in one round-trip,
       // but showing stages tells users we're doing more than "waiting".
-      setTimeout(() => setStage("Filtering + ranking…"), 400);
-      setTimeout(() => setStage("Writing rationales…"), 1200);
+      setTimeout(() => setStage("Searching 56,000+ games…"), 400);
+      setTimeout(() => setStage("Granting your wish…"), 1200);
 
       const res: ChatResponse = await clientChat({
         user_id: userId,
@@ -152,6 +153,7 @@ export default function ChatUI() {
         <div className="relative pt-4 pb-8">
           <div className="orb bg-accent w-[300px] h-[300px] -top-8 -left-8 opacity-40 animate-orb-drift pointer-events-none" />
           <div className="orb bg-gold w-[280px] h-[280px] top-10 right-0 opacity-25 animate-orb-drift [animation-delay:-6s] pointer-events-none" />
+          <ParticleField density={40} />
           <div className="relative">
             <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold bg-gold/10 border border-gold/30 rounded-full px-3 py-1 mb-6">
               <span className="animate-sparkle-spin inline-block">✦</span>
@@ -217,10 +219,11 @@ export default function ChatUI() {
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(t.recs ?? []).map(g => (
+                {(t.recs ?? []).map((g, gi) => (
                   <RecCard
                     key={g.app_id}
                     game={g}
+                    enterDelay={gi * 110}
                     onFeedback={feedback}
                     onMoreLikeThis={() => submit(`games like ${g.name}`)}
                   />
@@ -248,9 +251,14 @@ export default function ChatUI() {
       ))}
 
       {busy && (
-        <div className="text-sm text-muted italic flex items-center gap-2">
-          <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse" />
-          {stage || "Working…"}
+        <div className="inline-flex items-center gap-3 bg-panel/70 backdrop-blur border border-accent/30 rounded-2xl px-4 py-3 shadow-lg shadow-accent/10">
+          <div className="relative">
+            <span className="genie-bob inline-block text-2xl">🧞</span>
+            <span className="smoke" />
+            <span className="smoke smoke-2" />
+            <span className="smoke smoke-3" />
+          </div>
+          <span className="text-shimmer text-sm font-medium">{stage || "Summoning the genie…"}</span>
         </div>
       )}
 
@@ -284,16 +292,21 @@ export default function ChatUI() {
 
 function RecCard({
   game,
+  enterDelay = 0,
   onFeedback,
   onMoreLikeThis,
 }: {
   game: Game;
+  enterDelay?: number;
   onFeedback: (id: number, kind: "like" | "dislike") => void;
   onMoreLikeThis: () => void;
 }) {
   const [voted, setVoted] = useState<"like" | "dislike" | null>(null);
   return (
-    <div className="tilt-card bg-panel border border-border rounded-xl overflow-hidden flex flex-col">
+    <div
+      className="rec-enter tilt-card bg-panel border border-border rounded-xl overflow-hidden flex flex-col"
+      style={{ animationDelay: `${enterDelay}ms` }}
+    >
       {game.header_image && (
         // eslint-disable-next-line @next/next/no-img-element
         <img

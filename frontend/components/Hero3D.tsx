@@ -61,6 +61,51 @@ export default function Hero3D({ games }: { games: Game[] }) {
   if (games.length === 0) return null;
   const [main, ...rest] = games;
 
+  // Compact mobile variant: one statically-tilted floating card, no pointer
+  // tracking (touch devices), just enough 3D to carry the magic below lg.
+  const mobileHero = (
+    <div className="relative lg:hidden mt-10 flex justify-center" style={{ perspective: "900px" }}>
+      <div
+        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[260px] h-[60px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse at center, rgba(124,92,255,0.45), transparent 70%)",
+          filter: "blur(20px)",
+        }}
+      />
+      {SPARKLES.slice(0, 3).map((s, i) => (
+        <span
+          key={i}
+          className="twinkle absolute pointer-events-none"
+          style={{ top: s.top, left: s.left, fontSize: s.size, animationDelay: s.delay }}
+        >
+          ✦
+        </span>
+      ))}
+      <a
+        href={`/games/${main.slug}`}
+        className="animate-float block w-[290px] rounded-2xl overflow-hidden no-underline
+                   border border-accent/40 bg-panel relative"
+        style={{
+          transform: "rotateY(-12deg) rotateX(5deg)",
+          boxShadow: "0 30px 60px -20px rgba(124,92,255,0.5)",
+        }}
+      >
+        {main.header_image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={main.header_image} alt={main.name} className="w-full aspect-[460/215] object-cover" />
+        )}
+        <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-panel to-[#1d1a2e]">
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-white truncate">{main.name}</div>
+            <div className="text-[10px] text-gold uppercase tracking-[0.2em]">✦ top pick</div>
+          </div>
+          <span className="text-accent text-lg shrink-0">→</span>
+        </div>
+        <div className="hero3d-gloss absolute inset-0 pointer-events-none" />
+      </a>
+    </div>
+  );
+
   const edgeFace: React.CSSProperties = {
     position: "absolute",
     top: "50%",
@@ -70,6 +115,8 @@ export default function Hero3D({ games }: { games: Game[] }) {
   };
 
   return (
+    <>
+    {mobileHero}
     <div className="relative h-[460px] hidden lg:block select-none" style={{ perspective: "1400px" }}>
       {/* Glowing floor rings */}
       <div className="hero3d-ring" style={{ animationDuration: "14s" }} />
@@ -174,5 +221,6 @@ export default function Hero3D({ games }: { games: Game[] }) {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
+import { Sora } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
+
+// Display font for headings + brand — geometric, slightly futuristic.
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["400", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -29,32 +38,33 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={sora.variable}>
       <body>
         <div className="aurora" aria-hidden="true" />
         <div className="noise" aria-hidden="true" />
         <header className="border-b border-border/70 sticky top-0 z-40 backdrop-blur-xl bg-bg/60
                            shadow-[0_1px_0_rgba(124,92,255,0.15),0_8px_24px_-16px_rgba(0,0,0,0.8)]">
           <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" className="text-lg font-bold text-white no-underline flex items-center gap-2 group">
+            <a href="/" className="font-display text-lg font-bold text-white no-underline flex items-center gap-2 group">
               <span className="text-accent group-hover:text-gold transition-colors">✦</span>
               GameGenie
             </a>
-            <nav className="text-sm flex items-center gap-6">
+            <nav className="text-sm flex items-center gap-4 sm:gap-6">
               {[
                 { href: "/chat", label: "Chat" },
                 { href: "/genres", label: "Genres" },
                 { href: "/games", label: "Browse" },
-                { href: "/blog", label: "Blog" },
-                { href: "/profile", label: "You" },
-                { href: "/about", label: "About" },
+                { href: "/blog", label: "Blog", desktopOnly: true },
+                { href: "/profile", label: "You", desktopOnly: true },
+                { href: "/about", label: "About", desktopOnly: true },
               ].map(link => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="no-underline text-muted hover:text-white transition-colors relative
+                  className={`no-underline text-muted hover:text-white transition-colors relative
                              after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-0.5
-                             after:w-0 hover:after:w-full after:bg-accent after:transition-all"
+                             after:w-0 hover:after:w-full after:bg-accent after:transition-all
+                             ${link.desktopOnly ? "hidden sm:inline" : ""}`}
                 >
                   {link.label}
                 </a>

@@ -40,27 +40,59 @@ export default async function BrowsePage({
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {games.map(g => (
           <a
             key={g.app_id}
             href={`/games/${g.slug}`}
-            className="tilt-card bg-panel border border-border rounded-xl p-4 no-underline"
+            className="tilt-card bg-panel border border-border rounded-xl overflow-hidden no-underline group"
           >
-            <div className="text-white font-medium">{g.name}</div>
+            {g.header_image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={g.header_image}
+                alt={g.name}
+                loading="lazy"
+                className="w-full aspect-[460/215] object-cover group-hover:brightness-110 transition-[filter]"
+              />
+            ) : (
+              <div className="w-full aspect-[460/215] bg-gradient-to-br from-accent/15 to-gold/10 flex items-center justify-center text-2xl">
+                🎮
+              </div>
+            )}
+            <div className="p-3">
+              <div className="text-white font-medium text-sm truncate">{g.name}</div>
+              {typeof g.review_score === "number" && (
+                <div className="text-[11px] text-muted mt-0.5">
+                  {(g.review_score * 100).toFixed(0)}% positive
+                </div>
+              )}
+            </div>
           </a>
         ))}
       </div>
       <div className="flex justify-between mt-8 text-sm items-center">
         {page > 1 ? (
-          <a href={`/games?page=${page - 1}`} className="text-accent hover:text-gold transition-colors">← Previous</a>
+          <a
+            href={`/games?page=${page - 1}`}
+            className="bg-panel border border-border hover:border-accent rounded-xl px-4 py-2 no-underline text-white transition-colors"
+          >
+            ← Previous
+          </a>
         ) : (
           <span />
         )}
         <span className="text-muted">
           Page <span className="text-white">{page}</span> of {totalPages}
         </span>
-        {page < totalPages && <a href={`/games?page=${page + 1}`} className="text-accent hover:text-gold transition-colors">Next →</a>}
+        {page < totalPages && (
+          <a
+            href={`/games?page=${page + 1}`}
+            className="bg-panel border border-border hover:border-accent rounded-xl px-4 py-2 no-underline text-white transition-colors"
+          >
+            Next →
+          </a>
+        )}
       </div>
     </div>
   );
