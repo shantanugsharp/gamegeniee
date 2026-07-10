@@ -31,7 +31,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <header className="border-b border-border sticky top-0 z-40 backdrop-blur bg-bg/80">
+        <div className="aurora" aria-hidden="true" />
+        <div className="noise" aria-hidden="true" />
+        <header className="border-b border-border/70 sticky top-0 z-40 backdrop-blur-xl bg-bg/60
+                           shadow-[0_1px_0_rgba(124,92,255,0.15),0_8px_24px_-16px_rgba(0,0,0,0.8)]">
           <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
             <a href="/" className="text-lg font-bold text-white no-underline flex items-center gap-2 group">
               <span className="text-accent group-hover:text-gold transition-colors">✦</span>
@@ -60,9 +63,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main className="max-w-5xl mx-auto px-6 py-8">{children}</main>
-        <footer className="border-t border-border mt-16">
-          <div className="max-w-5xl mx-auto px-6 py-6 text-sm text-muted">
-            GameGenie · AI-powered game recommendations.
+        <footer className="border-t border-border mt-16 relative overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+          <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted">
+            <div className="flex items-center gap-2">
+              <span className="text-accent">✦</span>
+              <span className="text-white font-semibold">GameGenie</span>
+              <span className="hidden sm:inline">· your wish, our recommendation</span>
+            </div>
+            <nav className="flex items-center gap-5">
+              {[
+                { href: "/chat", label: "Chat" },
+                { href: "/games", label: "Browse" },
+                { href: "/blog", label: "Blog" },
+                { href: "/about", label: "About" },
+              ].map(l => (
+                <a key={l.href} href={l.href} className="no-underline text-muted hover:text-white transition-colors">
+                  {l.label}
+                </a>
+              ))}
+            </nav>
           </div>
         </footer>
         <Analytics />

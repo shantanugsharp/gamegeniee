@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { listGenres, listGames } from "@/lib/api";
 import { SITE_URL } from "@/lib/site";
 import SurpriseButton from "@/components/SurpriseButton";
+import Hero3D from "@/components/Hero3D";
+import ParticleField from "@/components/ParticleField";
+import Reveal from "@/components/Reveal";
 
 export const revalidate = 86400;
 
@@ -60,6 +63,9 @@ export default async function LandingPage() {
         <div className="orb bg-accent w-[420px] h-[420px] top-8 left-4 animate-orb-drift" />
         <div className="orb bg-gold   w-[380px] h-[380px] top-32 right-6 animate-orb-drift [animation-delay:-8s]" />
         <div className="orb bg-accent w-[280px] h-[280px] bottom-4 left-1/3 opacity-30 animate-orb-drift [animation-delay:-14s]" />
+        {/* Faint perspective grid + drifting magic-dust particles */}
+        <div className="absolute inset-0 hero-grid pointer-events-none" aria-hidden="true" />
+        <ParticleField density={70} />
 
         <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* ---- Left column: copy + CTA ---- */}
@@ -123,57 +129,42 @@ export default async function LandingPage() {
             </div>
           </div>
 
-          {/* ---- Right column: floating 3D card stack ---- */}
-          {heroStack.length > 0 && (
-            <div className="relative h-[420px] hidden lg:block perspective-1200">
-              <div className="relative w-full h-full preserve-3d">
-                {heroStack.map((g, i) => {
-                  // Stack transforms — each card shifted + rotated in 3D space
-                  const offsets = [
-                    { x: -40, y: -40, rot: -8, rx: 6, z: 20, delay: "0s" },
-                    { x: 40,  y: 20,  rot: 6,  rx: -4, z: 0,  delay: "-3s" },
-                    { x: -20, y: 90,  rot: -3, rx: 3,  z: -20, delay: "-6s" },
-                  ][i];
-                  const anim = i % 2 === 0 ? "animate-float" : "animate-float-slow";
-                  return (
-                    <div
-                      key={g.app_id}
-                      className={`absolute inset-0 flex items-center justify-center ${anim}`}
-                      style={{ animationDelay: offsets.delay }}
-                    >
-                      <a
-                        href={`/games/${g.slug}`}
-                        className="block w-[380px] rounded-2xl overflow-hidden border border-border
-                                   bg-panel shadow-2xl no-underline hover:shadow-accent/40 transition-shadow"
-                        style={{
-                          transform: `translate3d(${offsets.x}px, ${offsets.y}px, ${offsets.z}px) rotate(${offsets.rot}deg) rotateX(${offsets.rx}deg)`,
-                        }}
-                      >
-                        {g.header_image && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={g.header_image}
-                            alt={g.name}
-                            className="w-full aspect-[460/215] object-cover"
-                          />
-                        )}
-                        <div className="p-3">
-                          <div className="text-sm font-medium text-white truncate">{g.name}</div>
-                          <div className="text-[10px] text-muted mt-0.5 uppercase tracking-wider">
-                            featured
-                          </div>
-                        </div>
-                      </a>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* ---- Right column: floating 3D game case ---- */}
+          <Hero3D games={heroStack} />
         </div>
       </section>
 
+      {/* ============ MARQUEE ART STRIP ============ */}
+      {featuredGames.length > 3 && (
+        <section className="relative -my-8 marquee-mask overflow-hidden" aria-label="Featured game art">
+          <div className="marquee-track py-2">
+            {[...featuredGames, ...featuredGames].map((g, i) => (
+              <a
+                key={`${g.app_id}-${i}`}
+                href={`/games/${g.slug}`}
+                className="block w-[220px] shrink-0 rounded-xl overflow-hidden border border-border/70
+                           opacity-60 hover:opacity-100 hover:border-accent/60 transition-all
+                           hover:scale-[1.04] no-underline"
+                tabIndex={i >= featuredGames.length ? -1 : undefined}
+                aria-hidden={i >= featuredGames.length ? true : undefined}
+              >
+                {g.header_image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={g.header_image}
+                    alt={i >= featuredGames.length ? "" : g.name}
+                    className="w-full aspect-[460/215] object-cover"
+                    loading="lazy"
+                  />
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ============ HOW IT WORKS ============ */}
+      <Reveal>
       <section className="border-t border-border pt-16">
         <div className="text-center mb-12">
           <div className="text-xs uppercase tracking-widest text-gold mb-2">how it works</div>
@@ -217,9 +208,11 @@ export default async function LandingPage() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* ============ FEATURED GENRES ============ */}
       {featuredGenres.length > 0 && (
+        <Reveal>
         <section className="border-t border-border pt-16">
           <div className="flex items-baseline justify-between mb-6">
             <h2 className="text-3xl font-bold text-white">
@@ -244,10 +237,12 @@ export default async function LandingPage() {
             ))}
           </div>
         </section>
+        </Reveal>
       )}
 
       {/* ============ FEATURED GAMES ============ */}
       {featuredGames.length > 0 && (
+        <Reveal>
         <section className="border-t border-border pt-16">
           <div className="flex items-baseline justify-between mb-6">
             <h2 className="text-3xl font-bold text-white">
@@ -279,9 +274,11 @@ export default async function LandingPage() {
             ))}
           </div>
         </section>
+        </Reveal>
       )}
 
       {/* ============ FINAL CTA ============ */}
+      <Reveal>
       <section className="border-t border-border pt-16 pb-8 text-center relative overflow-hidden">
         <div className="orb bg-accent w-[400px] h-[400px] -top-16 left-1/2 -translate-x-1/2 opacity-30 animate-orb-drift" />
         <div className="relative">
@@ -301,6 +298,7 @@ export default async function LandingPage() {
           </a>
         </div>
       </section>
+      </Reveal>
     </div>
   );
 }
