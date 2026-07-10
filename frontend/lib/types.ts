@@ -16,6 +16,12 @@ export type Game = {
   developer?: string;
   release_year?: string;
   steam_url?: string;
+  store_urls?: {
+    fanatical?: string;
+    humble?: string;
+    gmg?: string;
+    steam: string;
+  };
   header_image: string;
   score: number;
   rationale?: string;

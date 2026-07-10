@@ -353,14 +353,18 @@ class Retriever:
     _YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 
     def _row_to_dict(self, row: int, score: float) -> dict:
+        from .affiliate import store_urls_for_game
+
         g = self.games.iloc[row]
         devs = self._safe_list(g["developers"])
         release_date = str(g["release_date"] or "")
         year_match = self._YEAR_RE.search(release_date)
         app_id = int(g["app_id"])
+        name = str(g["name"])
+        store_urls = store_urls_for_game(name, app_id)
         return {
             "app_id": app_id,
-            "name": str(g["name"]),
+            "name": name,
             "slug": str(g["slug"]),
             "short_description": str(g["short_description"]),
             "genres": self._safe_list(g["genres"]),
@@ -373,7 +377,8 @@ class Retriever:
             "tier": str(g["tier"]) if "tier" in g else "mid",
             "developer": devs[0] if devs else "",
             "release_year": year_match.group(0) if year_match else "",
-            "steam_url": f"https://store.steampowered.com/app/{app_id}",
+            "steam_url": store_urls["steam"],
+            "store_urls": store_urls,
             "header_image": str(g["header_image"]),
             "score": float(score),
         }

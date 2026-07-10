@@ -366,18 +366,48 @@ function RecCard({
           >
             More like this
           </button>
-          {game.steam_url && (
-            <a
-              href={game.steam_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-muted hover:text-white ml-auto"
-            >
-              Get game ↗
-            </a>
-          )}
+          <StoreLinks game={game} />
         </div>
       </div>
     </div>
   );
 }
+
+function StoreLinks({ game }: { game: Game }) {
+  const urls = game.store_urls;
+  // If store_urls not present (older cached data), fall back to steam_url only
+  if (!urls) {
+    return game.steam_url ? (
+      <a
+        href={game.steam_url}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        className="text-xs text-muted hover:text-white ml-auto"
+      >
+        Get game ↗
+      </a>
+    ) : null;
+  }
+  const stores: Array<{ key: keyof NonNullable<Game["store_urls"]>; label: string }> = [];
+  if (urls.fanatical) stores.push({ key: "fanatical", label: "Fanatical" });
+  if (urls.humble) stores.push({ key: "humble", label: "Humble" });
+  if (urls.gmg) stores.push({ key: "gmg", label: "GMG" });
+  stores.push({ key: "steam", label: "Steam" });
+  return (
+    <div className="flex flex-wrap gap-1 ml-auto">
+      {stores.map(s => (
+        <a
+          key={s.key}
+          href={urls[s.key]}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          className="text-[10px] uppercase tracking-wider bg-panel border border-border hover:border-gold hover:text-gold px-1.5 py-0.5 rounded no-underline text-muted transition-colors"
+          title={`Buy on ${s.label}`}
+        >
+          {s.label} ↗
+        </a>
+      ))}
+    </div>
+  );
+}
+

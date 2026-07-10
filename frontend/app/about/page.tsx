@@ -116,8 +116,8 @@ export default function AboutPage() {
               b: "Your thumbs live in your browser. We don&apos;t know who you are.",
             },
             {
-              t: "No affiliate cuts",
-              b: "Clicking through to buy a game doesn&apos;t send us a nickel.",
+              t: "No paid rankings",
+              b: "Recommendations are ranked by relevance to your query, not by which store pays more. Rankings never change based on affiliate payouts.",
             },
           ].map(item => (
             <div
@@ -151,6 +151,28 @@ export default function AboutPage() {
         <p className="text-muted leading-relaxed">
           Whether it&apos;s a cozy Sunday, a co-op friday night, a rainy weekend with a big backlog,
           or the sudden urge for &quot;something like Hades but different&quot; — the genie has an answer.
+        </p>
+      </section>
+
+      {/* ---------- Affiliate disclosure ---------- */}
+      <section className="relative mt-16">
+        <div className="text-xs uppercase tracking-widest text-gold mb-3">
+          ✦ how we keep the lights on
+        </div>
+        <h2 className="text-3xl font-bold text-white mb-4">
+          A note on <span className="text-accent">store links</span>.
+        </h2>
+        <p className="text-muted leading-relaxed mb-3">
+          When you click through to buy a game via Fanatical, Humble Bundle, or Green Man Gaming,
+          GameGenie may earn a small affiliate commission from that store — usually 3–10% of the
+          sale, paid by the store, not you. Steam links are unaffiliated (Valve has no affiliate
+          program).
+        </p>
+        <p className="text-muted leading-relaxed">
+          This does <span className="text-white font-medium">not</span> change what you pay, and
+          does <span className="text-white font-medium">not</span> affect recommendation rankings —
+          the genie ranks by relevance to your query, full stop. Affiliate revenue is what keeps
+          this project free and ad-free.
         </p>
       </section>
 

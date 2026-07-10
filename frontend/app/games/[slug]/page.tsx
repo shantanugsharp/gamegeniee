@@ -137,14 +137,48 @@ export default async function GameDetailPage({ params }: Props) {
             </div>
             <p className="text-sm leading-relaxed text-muted">{game.short_description}</p>
             <div className="flex flex-wrap gap-3 mt-5">
-              {game.steam_url && (
+              {game.store_urls?.fanatical && (
                 <a
-                  href={game.steam_url}
+                  href={game.store_urls.fanatical}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer sponsored"
                   className="cta-glow text-white rounded-xl px-5 py-2 font-medium no-underline inline-flex items-center gap-2 shadow-lg shadow-accent/40 hover:shadow-accent/70 transition-shadow"
                 >
-                  Get game <span>↗</span>
+                  Get on Fanatical <span>↗</span>
+                </a>
+              )}
+              {game.store_urls?.humble && (
+                <a
+                  href={game.store_urls.humble}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="bg-panel border border-border hover:border-gold text-white rounded-xl px-5 py-2 no-underline inline-flex items-center gap-2 transition-colors"
+                >
+                  Humble <span>↗</span>
+                </a>
+              )}
+              {game.store_urls?.gmg && (
+                <a
+                  href={game.store_urls.gmg}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="bg-panel border border-border hover:border-gold text-white rounded-xl px-5 py-2 no-underline inline-flex items-center gap-2 transition-colors"
+                >
+                  GMG <span>↗</span>
+                </a>
+              )}
+              {(game.store_urls?.steam || game.steam_url) && (
+                <a
+                  href={game.store_urls?.steam || game.steam_url}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className={
+                    game.store_urls?.fanatical || game.store_urls?.humble || game.store_urls?.gmg
+                      ? "bg-panel border border-border hover:border-gold text-white rounded-xl px-5 py-2 no-underline inline-flex items-center gap-2 transition-colors"
+                      : "cta-glow text-white rounded-xl px-5 py-2 font-medium no-underline inline-flex items-center gap-2 shadow-lg shadow-accent/40 hover:shadow-accent/70 transition-shadow"
+                  }
+                >
+                  Steam <span>↗</span>
                 </a>
               )}
               <a
